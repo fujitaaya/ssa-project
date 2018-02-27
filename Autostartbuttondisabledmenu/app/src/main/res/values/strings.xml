@@ -1,0 +1,7 @@
+<resources>
+        <string name="app_name">Auto start button disabled menu</string>
+        <string name="action_settings">Settings</string>
+        <string name="button01">電卓</string>
+        <string name="button02">カレンダー</string>
+        <string name="button03">設定</string>
+</resources>
