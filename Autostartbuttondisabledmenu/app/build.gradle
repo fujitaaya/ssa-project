@@ -4,7 +4,7 @@ android {
     compileSdkVersion 26
     buildToolsVersion "27.0.2"
     defaultConfig {
-        applicationId "jp.co.ss_ave.autostartbuttondisabledmenu"
+        applicationId "jp.co.ss_ave.auto_start_button_disabled_menu"
         minSdkVersion 15
         targetSdkVersion 26
         versionCode 1

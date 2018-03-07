@@ -4,4 +4,5 @@
         <string name="button01">電卓</string>
         <string name="button02">カレンダー</string>
         <string name="button03">設定</string>
+        <string name="button04">アプリ一覧</string>
 </resources>
