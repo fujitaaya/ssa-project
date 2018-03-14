@@ -20,9 +20,13 @@
                 <category android:name="android.intent.category.HOME" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
+
             </intent-filter>
         </activity>
-        <activity android:name=".ListActivity"></activity>
+        <activity
+            android:name=".ListActivity">
+        </activity>
     </application>
     <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 </manifest>

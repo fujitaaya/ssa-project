@@ -1,54 +1,57 @@
 package jp.co.ss_ave.auto_start_button_disabled_menu;
 
 import android.app.Activity;
-import android.app.ListActivity;
-import android.content.ComponentName;
-import android.content.Context;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.Icon;
-import android.media.Image;
 import android.os.Bundle;
-import android.os.Parcelable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
+import android.util.Base64;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
+import com.google.gson.Gson;
+import java.io.ByteArrayOutputStream;
+import java.util.Objects;
 
-public class MainActivity extends Activity implements View.OnClickListener {
+public class MainActivity extends Activity implements View.OnClickListener,View.OnLongClickListener {
 
     final int button01 = 0;
     final int button02 = 1;
     final int button03 = 2;
     final int button04 = 3;
     final int iniCheck = 999;
+    final int buttonMax = 4;
 
     public Intent shortcutIntent = null;
 
+    private SharedPreferences prefPut;
+    private SharedPreferences prefGet;
+    private SharedPreferences.Editor editor;
+    private Gson gson = new Gson();
 
     int clickCheck = iniCheck;
-    boolean[] buttonFlag = new boolean[4];
+//    Bitmap[] iconData = new Bitmap[buttonMax];
+//    String[] iconData = new String[buttonMax];
+//    String[] packageName = new String[buttonMax];
+//    boolean[] buttonFlag = new boolean[buttonMax];
 
+    Bitmap[] getIconDataBitmap = new Bitmap[buttonMax];
+    String[] getIconData = new String[buttonMax];
+    String[] getPackageName = new String[buttonMax];
+    boolean[] getButtonFlag = new boolean[buttonMax];
+
+    String flagCheck = "";
+    String iconStr = "";
+    String pName = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,14 +69,95 @@ public class MainActivity extends Activity implements View.OnClickListener {
 //            }
 //        });
 
-        //buttonを取得
-//        ImageButton button = (ImageButton) findViewById(R.id.Button01);
         findViewById(R.id.Button01).setOnClickListener(this);
         findViewById(R.id.Button02).setOnClickListener(this);
         findViewById(R.id.Button03).setOnClickListener(this);
         findViewById(R.id.Button04).setOnClickListener(this);
-//        findViewById(R.id.Button05).setOnClickListener(this);
 
+        findViewById(R.id.Button01).setOnLongClickListener(this);
+        findViewById(R.id.Button02).setOnLongClickListener(this);
+        findViewById(R.id.Button03).setOnLongClickListener(this);
+        findViewById(R.id.Button04).setOnLongClickListener(this);
+
+        //Preferences設定・データ取得
+//        prefPut = getApplicationContext().getSharedPreferences("jp.co.ss_ave.auto_start_button_disabled_menu",MODE_PRIVATE);
+//        editor = prefPut.edit();
+
+        PackageManager pm = getPackageManager();
+        Drawable getIcon = null;
+
+        prefGet = getApplicationContext().getSharedPreferences("jp.co.ss_ave.auto_start_button_disabled_menu",MODE_PRIVATE);
+
+        flagCheck = prefGet.getString("buttonFlag",null);
+        getButtonFlag = gson.fromJson(flagCheck,boolean[].class);
+
+        pName = prefGet.getString("packageName",null);
+        getPackageName = gson.fromJson(pName,String[].class);
+
+//        getIconDataBitmap = bitmapGet();
+
+        if(getIconDataBitmap == null){
+            getIconDataBitmap = new Bitmap[buttonMax];
+        }
+
+        //Preferencesにデータがあれば、アイコン設置
+        if(getButtonFlag != null){
+            for(int i = 0; i < buttonMax; i++){
+                if(getButtonFlag[i]){
+//                    getIconDataBitmap = bitmapGet();
+
+                    switch (i){
+                        case button01:
+                            try{
+                                getIcon = pm.getApplicationIcon(getPackageName[i].toString());
+                            }catch(Exception e){
+                                Log.e("Icon_Exception",e.toString());
+                            }
+
+                            ((ImageButton)findViewById(R.id.Button01)).setImageDrawable(getIcon);
+                            ((ImageButton)findViewById(R.id.Button01)).setBackground(null);
+                            break;
+
+                        case button02:
+                            try{
+                                getIcon = pm.getApplicationIcon(getPackageName[i].toString());
+                            }catch(Exception e){
+                                Log.e("Icon_Exception",e.toString());
+                            }
+
+                            ((ImageButton)findViewById(R.id.Button02)).setImageDrawable(getIcon);
+                            ((ImageButton)findViewById(R.id.Button02)).setBackground(null);
+                            break;
+
+                        case button03:
+                            try{
+                                getIcon = pm.getApplicationIcon(getPackageName[i].toString());
+                            }catch(Exception e){
+                                Log.e("Icon_Exception",e.toString());
+                            }
+
+                            ((ImageButton)findViewById(R.id.Button03)).setImageDrawable(getIcon);
+                            ((ImageButton)findViewById(R.id.Button03)).setBackground(null);
+                            break;
+
+                        case button04:
+                            try{
+                                getIcon = pm.getApplicationIcon(getPackageName[i].toString());
+                            }catch(Exception e){
+                                Log.e("Icon_Exception",e.toString());
+                            }
+
+                            ((ImageButton)findViewById(R.id.Button04)).setImageDrawable(getIcon);
+                            ((ImageButton)findViewById(R.id.Button04)).setBackground(null);
+                            break;
+                    }
+                }else{
+                    continue;
+                }
+            }
+        }else{
+            getButtonFlag = new boolean[buttonMax];
+        }
 
 
 //        //クラス名取得
@@ -95,58 +179,94 @@ public class MainActivity extends Activity implements View.OnClickListener {
 //        startActivity(intent);
 //
 //        Log.d("_test_",textdata);
-
     }
-
-
 
     public void onClick(View v) {
         PackageManager pm = getPackageManager();
         Intent intent = new Intent();
 
+        prefPut = getApplicationContext().getSharedPreferences("jp.co.ss_ave.auto_start_button_disabled_menu",MODE_PRIVATE);
+        editor = prefPut.edit();
+
+        prefGet = getApplicationContext().getSharedPreferences("jp.co.ss_ave.auto_start_button_disabled_menu",MODE_PRIVATE);
+
+        pName = prefGet.getString("packageName",null);
+        getPackageName = gson.fromJson(pName,String[].class);
+
+        flagCheck = prefGet.getString("buttonFlag",null);
+        getButtonFlag = gson.fromJson(flagCheck,boolean[].class);
+
+        if(getButtonFlag == null){
+            getButtonFlag = new boolean[buttonMax];
+        }
+
         // 各アプリ起動
         if(v != null){
+
+//            for(int i = 0; i < buttonMax; i++){
+//                if(buttonFlag[i] == true){
+//                    flagCheck = prefGet.getString("buttonFlag",null);
+//                    getButtonFlag = gson.fromJson(flagCheck,boolean[].class);
+//                    break;
+//                }
+//            }
             switch(v.getId()){
                 case R.id.Button01:
-                    if(buttonFlag[button01] == false){
+                    if(!getButtonFlag[button01]){
                         intent = new Intent(getApplication(), jp.co.ss_ave.auto_start_button_disabled_menu.ListActivity.class);
-                        buttonCheck(button01);
                         clickCheck = button01;
+
+                        editor.putInt("clickCheck",clickCheck);
+                        editor.apply();
+
                         startActivityForResult(intent, 1);
                     }else{
+                        shortcutIntent = pm.getLaunchIntentForPackage(getPackageName[button01]);
                         intent = shortcutIntent;
                     }
                     break;
 
                 case R.id.Button02:
-                    if(buttonFlag[button02] == false){
+                    if(!getButtonFlag[button02]){
                         intent = new Intent(getApplication(), jp.co.ss_ave.auto_start_button_disabled_menu.ListActivity.class);
-                        buttonCheck(button02);
                         clickCheck = button02;
+
+                        editor.putInt("clickCheck",clickCheck);
+                        editor.apply();
+
                         startActivityForResult(intent, 1);
                     }else{
+                        shortcutIntent = pm.getLaunchIntentForPackage(getPackageName[button02]);
                         intent = shortcutIntent;
                     }
                     break;
 
                 case R.id.Button03:
-                    if(buttonFlag[button03] == false){
+                    if(!getButtonFlag[button03]){
                         intent = new Intent(getApplication(), jp.co.ss_ave.auto_start_button_disabled_menu.ListActivity.class);
-                        buttonCheck(button03);
                         clickCheck = button03;
+
+                        editor.putInt("clickCheck",clickCheck);
+                        editor.apply();
+
                         startActivityForResult(intent, 1);
                     }else{
+                        shortcutIntent = pm.getLaunchIntentForPackage(getPackageName[button03]);
                         intent = shortcutIntent;
                     }
                     break;
 
                 case R.id.Button04:
-                    if(buttonFlag[button04] == false){
+                    if(!getButtonFlag[button04]){
                         intent = new Intent(getApplication(), jp.co.ss_ave.auto_start_button_disabled_menu.ListActivity.class);
-                        buttonCheck(button04);
                         clickCheck = button04;
+
+                        editor.putInt("clickCheck",clickCheck);
+                        editor.apply();
+
                         startActivityForResult(intent, 1);
                     }else{
+                        shortcutIntent = pm.getLaunchIntentForPackage(getPackageName[button04]);
                         intent = shortcutIntent;
                     }
                     break;
@@ -157,9 +277,49 @@ public class MainActivity extends Activity implements View.OnClickListener {
             startActivity(intent);
         }catch(Exception e){
             Toast.makeText(MainActivity.this, "対象のアプリがありません", Toast.LENGTH_SHORT).show();
-
         }
+    }
 
+    //ショートカット削除選択(長押し)
+    public boolean onLongClick(View v){
+
+//        for(int i = 0; i < buttonMax; i++){
+//            if(buttonFlag[i] == true){
+//                String flagCheck = "";
+                flagCheck = prefGet.getString("buttonFlag",null);
+                getButtonFlag = gson.fromJson(flagCheck,boolean[].class);
+//                break;
+//            }
+//        }
+
+        if(v != null && getButtonFlag != null) {
+            switch (v.getId()) {
+                case R.id.Button01:
+                    if (getButtonFlag[button01]) {
+                        diaLog(button01);
+                    }
+                    break;
+
+                case R.id.Button02:
+                    if (getButtonFlag[button02]) {
+                        diaLog(button02);
+                    }
+                    break;
+
+                case R.id.Button03:
+                    if (getButtonFlag[button03]) {
+                        diaLog(button03);
+                    }
+                    break;
+
+                case R.id.Button04:
+                    if (getButtonFlag[button04]) {
+                        diaLog(button04);
+                    }
+                    break;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -189,63 +349,278 @@ public class MainActivity extends Activity implements View.OnClickListener {
         // ホームアプリのため、戻るボタン無効
     }
 
+    //ListActivityから受け取る
     protected void onActivityResult( int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
 
         PackageManager pm = getPackageManager();
+        int getCheck = iniCheck;
+        String pkCheck = "";
+        boolean appCheck = false;
+
+        prefPut = getApplicationContext().getSharedPreferences("jp.co.ss_ave.auto_start_button_disabled_menu",MODE_PRIVATE);
+        editor = prefPut.edit();
+
+        prefGet = getApplicationContext().getSharedPreferences("jp.co.ss_ave.auto_start_button_disabled_menu",MODE_PRIVATE);
 
         if(resultCode == RESULT_OK && null != intent) {
 
-            Bitmap icon =  (Bitmap) intent.getExtras().get("icon");
+            Bitmap bitmapIcon =  (Bitmap) intent.getExtras().get("icon");
+            Drawable getIcon =  new BitmapDrawable(this.getResources(),bitmapIcon);
 
-            if(clickCheck != iniCheck){
-                switch (clickCheck){
-                    case button01:
-                        ((ImageButton)findViewById(R.id.Button01)).setImageBitmap(icon);
-                        ((ImageButton)findViewById(R.id.Button01)).setBackground(null);
-                        break;
+            getCheck = prefGet.getInt("clickCheck",iniCheck);
+            pkCheck = intent.getStringExtra("packageName");
 
-                    case button02:
-                        ((ImageButton)findViewById(R.id.Button02)).setImageBitmap(icon);
-                        ((ImageButton)findViewById(R.id.Button02)).setBackground(null);
-                        break;
+            pName = prefGet.getString("packageName",null);
+            getPackageName = gson.fromJson(pName,String[].class);
 
-                    case button03:
-                        ((ImageButton)findViewById(R.id.Button03)).setImageBitmap(icon);
-                        ((ImageButton)findViewById(R.id.Button03)).setBackground(null);
-                        break;
+            if(getPackageName == null){
+                getPackageName = new String[buttonMax];
+            }
 
-                    case button04:
-                        ((ImageButton)findViewById(R.id.Button04)).setImageBitmap(icon);
-                        ((ImageButton)findViewById(R.id.Button04)).setBackground(null);
-                        break;
+            //ショートカット被り回避
+            for(int i = 0; i < buttonMax; i++){
+                if(pkCheck.equals(getPackageName[i])) {
+                    Toast.makeText(MainActivity.this, "既にショートカットが作成済です。", Toast.LENGTH_SHORT).show();
+                    appCheck = true;
                 }
             }
 
-            shortcutIntent = pm.getLaunchIntentForPackage(intent.getStringExtra("packageName"));
+            //押下されたボタンにアプリデータセット
+            if((getCheck != iniCheck) && (!appCheck)){
+
+                switch (getCheck){
+                    case button01:
+                        ((ImageButton)findViewById(R.id.Button01)).setImageDrawable(getIcon);
+                        ((ImageButton)findViewById(R.id.Button01)).setBackground(null);
+
+                        buttonCheck(button01,true);
+
+                        getPackageName[button01] =intent.getStringExtra("packageName");
+
+                        pName = gson.toJson(getPackageName);
+                        editor.putString("packageName",pName);
+                        editor.apply();
+                        break;
+
+                    case button02:
+                        ((ImageButton)findViewById(R.id.Button02)).setImageDrawable(getIcon);
+                        ((ImageButton)findViewById(R.id.Button02)).setBackground(null);
+
+                        buttonCheck(button02,true);
+
+                        getPackageName[button02] =intent.getStringExtra("packageName");
+
+                        pName = gson.toJson(getPackageName);
+                        editor.putString("packageName",pName);
+                        editor.apply();
+                        break;
+
+                    case button03:
+                        ((ImageButton)findViewById(R.id.Button03)).setImageDrawable(getIcon);
+                        ((ImageButton)findViewById(R.id.Button03)).setBackground(null);
+
+                        buttonCheck(button03,true);
+
+                        getPackageName[button03] =intent.getStringExtra("packageName");
+
+                        pName = gson.toJson(getPackageName);
+                        editor.putString("packageName",pName);
+                        editor.apply();
+                        break;
+
+                    case button04:
+                        ((ImageButton)findViewById(R.id.Button04)).setImageDrawable(getIcon);
+                        ((ImageButton)findViewById(R.id.Button04)).setBackground(null);
+
+                        buttonCheck(button04,true);
+
+                        getPackageName[button04] =intent.getStringExtra("packageName");
+
+                        pName = gson.toJson(getPackageName);
+                        editor.putString("packageName",pName);
+                        editor.apply();
+                        break;
+                }
+            }
             clickCheck = iniCheck;
+
+            editor.putInt("clickCheck",clickCheck);
+            editor.apply();
         }
     }
 
-    protected void buttonCheck(int Flag){
+    //ボタンのクリック判定(true:アプリセット済)
+    protected void buttonCheck(int Flag,boolean check){
+
+        prefPut = getApplicationContext().getSharedPreferences("jp.co.ss_ave.auto_start_button_disabled_menu",MODE_PRIVATE);
+        editor = prefPut.edit();
+
+        String flag = "";
+
+        flagCheck = prefGet.getString("buttonFlag",null);
+        getButtonFlag = gson.fromJson(flagCheck,boolean[].class);
+
+        if(getButtonFlag == null){
+            getButtonFlag = new boolean[buttonMax];
+        }
 
         switch (Flag){
             case button01:
-                buttonFlag[button01] = true;
+                getButtonFlag[button01] = check;
+
+                flag = gson.toJson(getButtonFlag);
+                editor.putString("buttonFlag",flag);
+                editor.apply();
+
                 break;
 
             case button02:
-                buttonFlag[button02] = true;
+                getButtonFlag[button02] = check;
+
+                flag = gson.toJson(getButtonFlag);
+                editor.putString("buttonFlag",flag);
+                editor.apply();
                 break;
 
             case button03:
-                buttonFlag[button03] = true;
+                getButtonFlag[button03] = check;
+
+                flag = gson.toJson(getButtonFlag);
+                editor.putString("buttonFlag",flag);
+                editor.apply();
+
                 break;
 
             case button04:
-                buttonFlag[button04] = true;
+                getButtonFlag[button04] = check;
+
+                flag = gson.toJson(getButtonFlag);
+                editor.putString("buttonFlag",flag);
+                editor.apply();
                 break;
         }
     }
 
+    //アイコンを保存
+//    protected void bitmapPut(Bitmap icon, int num){
+////        prefPut = getApplicationContext().getSharedPreferences("jp.co.ss_ave.auto_start_button_disabled_menu",MODE_PRIVATE);
+////        editor = prefPut.edit();
+////
+////        getIconDataBitmap = bitmapGet();
+////
+////        if(getIconDataBitmap != null){
+////            getIconDataBitmap[num] = icon;
+//        Bitmap bitmap = icon;
+//            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//            bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+//            String bitmapStr = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
+//
+//            iconData[num] = bitmapStr;
+//            iconStr = gson.toJson(iconData);
+//
+//            editor.putString("icon", iconStr);
+//            editor.apply();
+////        }else{
+////            getIconDataBitmap = new Bitmap[buttonMax];
+////        }
+//    }
+
+    //アイコンをpreferenceから取得
+//    protected Bitmap[] bitmapGet(){
+//
+//        Bitmap[] bitmap = new Bitmap[buttonMax];
+//        prefGet = getApplicationContext().getSharedPreferences("jp.co.ss_ave.auto_start_button_disabled_menu",MODE_PRIVATE);
+//
+//        iconStr = prefGet.getString("icon", "");
+//        getIconData = gson.fromJson(iconStr,String[].class);
+//
+//        if(getIconData != null) {
+//            for (int i = 0; i < buttonMax; i++) {
+//                if (getIconData[i] != null) {
+//                    BitmapFactory.Options options = new BitmapFactory.Options();
+//                    byte[] b = Base64.decode(getIconData[i], Base64.DEFAULT);
+//                    bitmap[i] = BitmapFactory.decodeByteArray(b, 0, b.length).copy(Bitmap.Config.ARGB_8888, true);
+//                }
+//            }
+//        }
+//        return bitmap;
+//    }
+
+
+    //ショートカット削除の確認ダイアログ
+    protected  void diaLog(final int buttonNum){
+
+        prefPut = getApplicationContext().getSharedPreferences("jp.co.ss_ave.auto_start_button_disabled_menu",MODE_PRIVATE);
+        editor = prefPut.edit();
+
+        pName = prefGet.getString("packageName",null);
+        getPackageName = gson.fromJson(pName,String[].class);
+
+        if(getPackageName == null){
+            getPackageName = new String[buttonMax];
+        }
+
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+
+        dialog.setTitle("ショートカットの削除");
+        dialog.setMessage("このアプリのショートカットを削除しますか？");
+        dialog.setPositiveButton("Yes", new DialogInterface.OnClickListener(){
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                switch(buttonNum){
+                    case button01:
+                        ((ImageButton)findViewById(R.id.Button01)).setImageDrawable(null);
+                        ((ImageButton)findViewById(R.id.Button01)).setBackgroundResource(R.mipmap.add);
+                        getPackageName[button01] = null;
+
+                        buttonCheck(button01, false);
+
+                        pName = gson.toJson(getPackageName);
+                        editor.putString("packageName",pName);
+                        editor.apply();
+                        break;
+
+                    case button02:
+                        ((ImageButton)findViewById(R.id.Button02)).setImageDrawable(null);
+                        ((ImageButton)findViewById(R.id.Button02)).setBackgroundResource(R.mipmap.add);
+                        getPackageName[button02] = null;
+
+                        buttonCheck(button02, false);
+
+                        pName = gson.toJson(getPackageName);
+                        editor.putString("packageName",pName);
+                        editor.apply();
+                        break;
+
+                    case button03:
+                        ((ImageButton)findViewById(R.id.Button03)).setImageDrawable(null);
+                        ((ImageButton)findViewById(R.id.Button03)).setBackgroundResource(R.mipmap.add);
+                        getPackageName[button03] = null;
+
+                        buttonCheck(button03,false);
+
+                        pName = gson.toJson(getPackageName);
+                        editor.putString("packageName",pName);
+                        editor.apply();
+                        break;
+
+                    case button04:
+                        ((ImageButton)findViewById(R.id.Button04)).setImageDrawable(null);
+                        ((ImageButton)findViewById(R.id.Button04)).setBackgroundResource(R.mipmap.add);
+                        getPackageName[button04] = null;
+
+                        buttonCheck(button04,false);
+
+                        pName = gson.toJson(getPackageName);
+                        editor.putString("packageName",pName);
+                        editor.apply();
+                        break;
+                }
+            }
+        });
+        dialog.setNegativeButton("No", null);
+        dialog.show();
+    }
 }
