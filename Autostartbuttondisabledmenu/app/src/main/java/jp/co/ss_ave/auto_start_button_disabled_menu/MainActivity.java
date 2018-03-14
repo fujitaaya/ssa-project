@@ -22,35 +22,34 @@ import com.google.gson.Gson;
 import java.io.ByteArrayOutputStream;
 import java.util.Objects;
 
+import static android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP;
+
 public class MainActivity extends Activity implements View.OnClickListener,View.OnLongClickListener {
 
+    //ボタンの位置番号(右上が0で反時計回り)
     final int button01 = 0;
     final int button02 = 1;
     final int button03 = 2;
     final int button04 = 3;
-    final int iniCheck = 999;
+    final int iniCheck = 999; //初期化用
     final int buttonMax = 4;
 
-    public Intent shortcutIntent = null;
-
+    //Preference定義
+    public static String preferenceName = "jp.co.ss_ave.auto_start_button_disabled_menu";
     private SharedPreferences prefPut;
     private SharedPreferences prefGet;
     private SharedPreferences.Editor editor;
     private Gson gson = new Gson();
 
-    int clickCheck = iniCheck;
-//    Bitmap[] iconData = new Bitmap[buttonMax];
-//    String[] iconData = new String[buttonMax];
-//    String[] packageName = new String[buttonMax];
-//    boolean[] buttonFlag = new boolean[buttonMax];
-
+    //各アプリデータ取得用
     Bitmap[] getIconDataBitmap = new Bitmap[buttonMax];
-    String[] getIconData = new String[buttonMax];
     String[] getPackageName = new String[buttonMax];
+
+    //チェック用
+    int clickCheck = iniCheck;
     boolean[] getButtonFlag = new boolean[buttonMax];
 
     String flagCheck = "";
-    String iconStr = "";
     String pName = "";
 
     @Override
@@ -69,32 +68,29 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
 //            }
 //        });
 
+        //ボタンクリック用定義
         findViewById(R.id.Button01).setOnClickListener(this);
         findViewById(R.id.Button02).setOnClickListener(this);
         findViewById(R.id.Button03).setOnClickListener(this);
         findViewById(R.id.Button04).setOnClickListener(this);
 
+        //ボタン長押し用定義
         findViewById(R.id.Button01).setOnLongClickListener(this);
         findViewById(R.id.Button02).setOnLongClickListener(this);
         findViewById(R.id.Button03).setOnLongClickListener(this);
         findViewById(R.id.Button04).setOnLongClickListener(this);
 
-        //Preferences設定・データ取得
-//        prefPut = getApplicationContext().getSharedPreferences("jp.co.ss_ave.auto_start_button_disabled_menu",MODE_PRIVATE);
-//        editor = prefPut.edit();
-
+        //Preferencesデータ取得
         PackageManager pm = getPackageManager();
         Drawable getIcon = null;
 
-        prefGet = getApplicationContext().getSharedPreferences("jp.co.ss_ave.auto_start_button_disabled_menu",MODE_PRIVATE);
+        prefGet = getApplicationContext().getSharedPreferences(preferenceName,MODE_PRIVATE);
 
         flagCheck = prefGet.getString("buttonFlag",null);
         getButtonFlag = gson.fromJson(flagCheck,boolean[].class);
 
         pName = prefGet.getString("packageName",null);
         getPackageName = gson.fromJson(pName,String[].class);
-
-//        getIconDataBitmap = bitmapGet();
 
         if(getIconDataBitmap == null){
             getIconDataBitmap = new Bitmap[buttonMax];
@@ -104,7 +100,6 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
         if(getButtonFlag != null){
             for(int i = 0; i < buttonMax; i++){
                 if(getButtonFlag[i]){
-//                    getIconDataBitmap = bitmapGet();
 
                     switch (i){
                         case button01:
@@ -158,37 +153,17 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
         }else{
             getButtonFlag = new boolean[buttonMax];
         }
-
-
-//        //クラス名取得
-//        Intent it = new Intent(Intent.ACTION_MAIN, null);
-//        it.addCategory(Intent.CATEGORY_LAUNCHER);
-//        PackageManager pManager = getPackageManager();
-//        List<ResolveInfo> appList =  pManager.queryIntentActivities(it,0);
-//        Collections.sort(appList,new ResolveInfo.DisplayNameComparator(pManager));
-//        //Dataにして
-//        String textdata = "";
-//        for (ResolveInfo info : appList) {
-//            textdata = textdata + info.activityInfo.name +"\n";
-//        }
-//        //暗黙のintentでデータを投げる
-//        Intent intent = new Intent();
-//        intent.setAction(Intent.ACTION_SEND);
-//        intent.putExtra(Intent.EXTRA_TEXT, textdata);
-//        intent.setType( "text/plain" );
-//        startActivity(intent);
-//
-//        Log.d("_test_",textdata);
     }
 
     public void onClick(View v) {
         PackageManager pm = getPackageManager();
         Intent intent = new Intent();
 
-        prefPut = getApplicationContext().getSharedPreferences("jp.co.ss_ave.auto_start_button_disabled_menu",MODE_PRIVATE);
+        //Preferencesデータ取得
+        prefPut = getApplicationContext().getSharedPreferences(preferenceName,MODE_PRIVATE);
         editor = prefPut.edit();
 
-        prefGet = getApplicationContext().getSharedPreferences("jp.co.ss_ave.auto_start_button_disabled_menu",MODE_PRIVATE);
+        prefGet = getApplicationContext().getSharedPreferences(preferenceName,MODE_PRIVATE);
 
         pName = prefGet.getString("packageName",null);
         getPackageName = gson.fromJson(pName,String[].class);
@@ -200,16 +175,13 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
             getButtonFlag = new boolean[buttonMax];
         }
 
-        // 各アプリ起動
-        if(v != null){
+        //リスト側でチェックする用
+        editor.putBoolean("listCheck",true);
+        editor.apply();
 
-//            for(int i = 0; i < buttonMax; i++){
-//                if(buttonFlag[i] == true){
-//                    flagCheck = prefGet.getString("buttonFlag",null);
-//                    getButtonFlag = gson.fromJson(flagCheck,boolean[].class);
-//                    break;
-//                }
-//            }
+        // 各アプリ起動
+        // ボタンにアプリが設定されていなければ、リストを開く
+        if(v != null){
             switch(v.getId()){
                 case R.id.Button01:
                     if(!getButtonFlag[button01]){
@@ -221,8 +193,7 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
 
                         startActivityForResult(intent, 1);
                     }else{
-                        shortcutIntent = pm.getLaunchIntentForPackage(getPackageName[button01]);
-                        intent = shortcutIntent;
+                        intent = pm.getLaunchIntentForPackage(getPackageName[button01]);
                     }
                     break;
 
@@ -236,8 +207,7 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
 
                         startActivityForResult(intent, 1);
                     }else{
-                        shortcutIntent = pm.getLaunchIntentForPackage(getPackageName[button02]);
-                        intent = shortcutIntent;
+                        intent = pm.getLaunchIntentForPackage(getPackageName[button02]);
                     }
                     break;
 
@@ -251,8 +221,7 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
 
                         startActivityForResult(intent, 1);
                     }else{
-                        shortcutIntent = pm.getLaunchIntentForPackage(getPackageName[button03]);
-                        intent = shortcutIntent;
+                        intent = pm.getLaunchIntentForPackage(getPackageName[button03]);
                     }
                     break;
 
@@ -266,8 +235,7 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
 
                         startActivityForResult(intent, 1);
                     }else{
-                        shortcutIntent = pm.getLaunchIntentForPackage(getPackageName[button04]);
-                        intent = shortcutIntent;
+                        intent = pm.getLaunchIntentForPackage(getPackageName[button04]);
                     }
                     break;
             }
@@ -283,14 +251,8 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
     //ショートカット削除選択(長押し)
     public boolean onLongClick(View v){
 
-//        for(int i = 0; i < buttonMax; i++){
-//            if(buttonFlag[i] == true){
-//                String flagCheck = "";
-                flagCheck = prefGet.getString("buttonFlag",null);
-                getButtonFlag = gson.fromJson(flagCheck,boolean[].class);
-//                break;
-//            }
-//        }
+        flagCheck = prefGet.getString("buttonFlag",null);
+        getButtonFlag = gson.fromJson(flagCheck,boolean[].class);
 
         if(v != null && getButtonFlag != null) {
             switch (v.getId()) {
@@ -358,10 +320,10 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
         String pkCheck = "";
         boolean appCheck = false;
 
-        prefPut = getApplicationContext().getSharedPreferences("jp.co.ss_ave.auto_start_button_disabled_menu",MODE_PRIVATE);
+        prefPut = getApplicationContext().getSharedPreferences(preferenceName,MODE_PRIVATE);
         editor = prefPut.edit();
 
-        prefGet = getApplicationContext().getSharedPreferences("jp.co.ss_ave.auto_start_button_disabled_menu",MODE_PRIVATE);
+        prefGet = getApplicationContext().getSharedPreferences(preferenceName,MODE_PRIVATE);
 
         if(resultCode == RESULT_OK && null != intent) {
 
@@ -453,7 +415,7 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
     //ボタンのクリック判定(true:アプリセット済)
     protected void buttonCheck(int Flag,boolean check){
 
-        prefPut = getApplicationContext().getSharedPreferences("jp.co.ss_ave.auto_start_button_disabled_menu",MODE_PRIVATE);
+        prefPut = getApplicationContext().getSharedPreferences(preferenceName,MODE_PRIVATE);
         editor = prefPut.edit();
 
         String flag = "";
@@ -551,7 +513,7 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
     //ショートカット削除の確認ダイアログ
     protected  void diaLog(final int buttonNum){
 
-        prefPut = getApplicationContext().getSharedPreferences("jp.co.ss_ave.auto_start_button_disabled_menu",MODE_PRIVATE);
+        prefPut = getApplicationContext().getSharedPreferences(preferenceName,MODE_PRIVATE);
         editor = prefPut.edit();
 
         pName = prefGet.getString("packageName",null);
@@ -569,6 +531,7 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
             @Override
             public void onClick(DialogInterface dialog, int which) {
 
+                // "Yes"が押されたらPreferenceのアプリデータを初期化
                 switch(buttonNum){
                     case button01:
                         ((ImageButton)findViewById(R.id.Button01)).setImageDrawable(null);
