@@ -5,4 +5,5 @@
         <string name="button02">カレンダー</string>
         <string name="button03">設定</string>
         <string name="button04">アプリ一覧</string>
+        <string name="textAdd">Add</string>
 </resources>
