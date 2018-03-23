@@ -1,25 +1,65 @@
 package jp.co.ss_ave.auto_start_button_disabled_menu;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.Toast;
 
 public class MainActivity extends FragmentActivity {
 
-    ViewPager viewPager;
+    public static ViewPager viewPager;
+    public static int pos = 0;
+
+    public static MainActivity main;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.content_main);
 
         viewPager = (ViewPager) findViewById(R.id.pager);
         viewPager.setAdapter(
                 new MyFragmentStatePagerAdapter(
                         getSupportFragmentManager()));
+
+        main = this;
+
+//        viewIcon(pos);
+    }
+
+    public void viewIcon(int position){
+
+        Drawable image0 = getResources().getDrawable(R.mipmap.page_0);
+        Drawable image1 = getResources().getDrawable(R.mipmap.page_1);
+
+        switch (position){
+            case 0:
+                ((ImageView)findViewById(R.id.imageView3)).setImageDrawable(image1);
+                ((ImageView)findViewById(R.id.imageView)).setImageDrawable(image0);
+                ((ImageView)findViewById(R.id.imageView2)).setImageDrawable(image0);
+                break;
+
+            case 1:
+                ((ImageView)findViewById(R.id.imageView3)).setImageDrawable(image0);
+                ((ImageView)findViewById(R.id.imageView)).setImageDrawable(image1);
+                ((ImageView)findViewById(R.id.imageView2)).setImageDrawable(image0);
+                break;
+
+            case 2:
+                ((ImageView)findViewById(R.id.imageView3)).setImageDrawable(image0);
+                ((ImageView)findViewById(R.id.imageView)).setImageDrawable(image0);
+                ((ImageView)findViewById(R.id.imageView2)).setImageDrawable(image1);
+                break;
+        }
     }
 
     @Override
